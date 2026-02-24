@@ -1,0 +1,66 @@
+def greet():
+    print("Welcome to ATM")
+
+def check_pin():
+    pin = input("Enter PIN: ")
+    if pin == "1410":
+        return True
+    else:
+        print("Invalid PIN")
+        return False
+
+def withdraw(cr):
+    if check_pin():
+        wd = int(input("Enter withdraw amount: "))
+        if wd > cr:
+            print("Insufficient balance")
+        else:
+            print("Remaining balance:", cr - wd)
+
+def deposit(cr):
+    if check_pin():
+        dp = int(input("Enter deposit amount: "))
+        print("New balance:", cr + dp)
+
+def change_pin():
+    pin = input("Enter new pin: ")
+    if len(pin) == 4 and pin.isdigit():
+        print("Pin changed successfully")
+    else:
+        print("Invalid PIN (must enter 4 digit pin)")
+
+def details():
+    acc = input("Enter account number: ")
+    if len(acc) == 11 and acc.isdigit():
+        print("Account details shown:")
+        print("Shubham Bhimajiyani")
+        print("Current balance", cr)
+    else:
+        print("Please enter a correct account number")
+
+def check_balance(cr):
+    print("Balance:", cr)
+    
+cr = 100000
+greet()
+
+print("1.Withdraw")
+print("2.Deposit")
+print("3.Change pin")
+print("4.Details")
+print("5.Check balance")
+
+choice = int(input("What do you want: "))
+
+if choice == 1:
+    withdraw(cr)
+elif choice == 2:
+    deposit(cr)
+elif choice == 3:
+    change_pin()
+elif choice == 4:
+    details()
+elif choice == 5:
+    check_balance(cr)
+else:
+    print("Invalid choice")
