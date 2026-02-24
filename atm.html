@@ -23,6 +23,20 @@ border-radius:20px;
 box-shadow:0 0 30px #00ffff;
 text-align:center;
 width:340px;
+position:relative;
+}
+
+.card{
+width:80px;
+height:50px;
+background:#00ffff;
+margin:auto;
+border-radius:8px;
+animation:insert 2s infinite alternate;
+}
+@keyframes insert{
+from{transform:translateY(0)}
+to{transform:translateY(10px)}
 }
 
 .screen{
@@ -58,6 +72,27 @@ margin:4px;
 }
 
 .menu{display:none;}
+
+.history{
+max-height:100px;
+overflow:auto;
+background:#000;
+padding:10px;
+border-radius:10px;
+margin-top:10px;
+}
+
+.receipt{
+display:none;
+position:absolute;
+top:50%;
+left:50%;
+transform:translate(-50%,-50%);
+background:#000;
+padding:20px;
+border-radius:15px;
+box-shadow:0 0 20px #00ffff;
+}
 </style>
 </head>
 
@@ -65,9 +100,11 @@ margin:4px;
 
 <div class="atm">
 
+<div class="card"></div>
+
 <div class="screen">
 <h3>ATM Login</h3>
-<input type="password" id="pin" placeholder="Enter PIN" readonly>
+<input type="password" id="pin" placeholder="Enter 4 digit PIN" readonly>
 </div>
 
 <div class="keypad">
@@ -91,17 +128,29 @@ margin:4px;
 
 <button onclick="withdraw()">Withdraw ₹500</button>
 <button onclick="deposit()">Deposit ₹500</button>
+<button onclick="showReceipt()">Receipt</button>
 <button onclick="logout()">Logout</button>
 <button onclick="closeATM()">Close</button>
+
+<div class="history" id="history"></div>
+</div>
+
+<div class="receipt" id="receipt">
+<h3>Receipt</h3>
+<p id="rbal"></p>
+<button onclick="closeReceipt()">Close</button>
 </div>
 
 </div>
 
 <script>
 let bal=10000;
+let history=[];
 
 function press(num){
+if(document.getElementById("pin").value.length<4){
 document.getElementById("pin").value+=num;
+}
 }
 
 function clearPin(){
@@ -109,26 +158,40 @@ document.getElementById("pin").value="";
 }
 
 function login(){
-if(document.getElementById("pin").value=="1234"){
+let p=document.getElementById("pin").value;
+if(p.length==4){
 document.getElementById("menu").style.display="block";
 }else{
-alert("Wrong PIN");
-clearPin();
+alert("Enter 4 digit PIN");
 }
 }
 
 function withdraw(){
 if(bal>=500){
 bal-=500;
-document.getElementById("balance").innerText="Balance: ₹"+bal;
-}else{
-alert("Low Balance");
-}
+history.push("Withdraw ₹500");
+update();
+}else alert("Low Balance");
 }
 
 function deposit(){
 bal+=500;
+history.push("Deposit ₹500");
+update();
+}
+
+function update(){
 document.getElementById("balance").innerText="Balance: ₹"+bal;
+document.getElementById("history").innerHTML=history.join("<br>");
+}
+
+function showReceipt(){
+document.getElementById("receipt").style.display="block";
+document.getElementById("rbal").innerText="Balance: ₹"+bal;
+}
+
+function closeReceipt(){
+document.getElementById("receipt").style.display="none";
 }
 
 function logout(){
