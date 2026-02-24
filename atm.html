@@ -2,20 +2,21 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>ATM Simulation</title>
+<title>ATM Ultimate</title>
 
 <style>
 body{margin:0;font-family:Arial;background:#050505;color:#00ffff;display:flex;justify-content:center;align-items:center;height:100vh;}
 .atm{background:#111;padding:30px;border-radius:20px;box-shadow:0 0 30px #00ffff;text-align:center;width:360px;position:relative;}
 .card{width:80px;height:50px;background:#00ffff;margin:auto;border-radius:8px;animation:insert 2s infinite alternate;}
 @keyframes insert{from{transform:translateY(0)}to{transform:translateY(10px)}}
-.screen{background:#000;padding:15px;border-radius:10px;margin-bottom:15px;}
 input{width:100%;padding:10px;margin:10px 0;border-radius:10px;border:none;text-align:center;font-size:18px;}
 button{background:#00ffff;border:none;padding:10px 18px;margin:5px;border-radius:20px;cursor:pointer;}
 .keypad button{width:70px;margin:4px;}
 .menu{display:none;}
 .history{max-height:100px;overflow:auto;background:#000;padding:10px;border-radius:10px;margin-top:10px;}
 .receipt{display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:#000;padding:20px;border-radius:15px;box-shadow:0 0 20px #00ffff;width:260px;}
+.fp{width:80px;height:80px;border-radius:50%;border:2px solid #00ffff;margin:auto;animation:pulse 2s infinite;}
+@keyframes pulse{0%{box-shadow:0 0 10px #00ffff}50%{box-shadow:0 0 25px #00ffff}100%{box-shadow:0 0 10px #00ffff}}
 </style>
 </head>
 
@@ -25,12 +26,12 @@ button{background:#00ffff;border:none;padding:10px 18px;margin:5px;border-radius
 
 <div class="card"></div>
 
-<div class="screen">
 <h3>ATM Login</h3>
-<input type="password" id="pin" maxlength="4" placeholder="Enter 4 digit PIN">
-</div>
+<input type="password" id="pin" maxlength="4" placeholder="Enter PIN">
 
-<!-- ⭐ ATM keypad -->
+<div class="fp" onclick="fingerprint()"></div>
+<p>Fingerprint Login</p>
+
 <div class="keypad">
 <button onclick="press(1)">1</button>
 <button onclick="press(2)">2</button>
@@ -74,8 +75,10 @@ let bal=10000;
 let history=[];
 let tries=0;
 let pin="1234";
+let dailyLimit=5000;
+let todayWithdraw=0;
 
-// ⭐ laptop keyboard support
+// ⭐ keyboard support
 document.addEventListener("keydown",function(e){
 if(!isNaN(e.key) && document.getElementById("pin").value.length<4){
 document.getElementById("pin").value+=e.key;
@@ -84,13 +87,21 @@ if(e.key==="Backspace") clearPin();
 if(e.key==="Enter") login();
 });
 
+function beep(){alert("Beep");}
+
 function press(num){
+beep();
 if(document.getElementById("pin").value.length<4){
 document.getElementById("pin").value+=num;
 }
 }
 
 function clearPin(){document.getElementById("pin").value="";}
+
+function fingerprint(){
+alert("Fingerprint success");
+document.getElementById("menu").style.display="block";
+}
 
 function login(){
 if(document.getElementById("pin").value===pin){
@@ -105,8 +116,12 @@ if(tries>=3) alert("Card Blocked!");
 
 function withdraw(){
 let amt=parseInt(prompt("Enter withdraw amount"));
-if(amt>0 && bal>=amt){bal-=amt;history.push("Withdraw ₹"+amt);update();}
-else alert("Invalid amount / Low balance");
+if(amt>0 && bal>=amt && todayWithdraw+amt<=dailyLimit){
+bal-=amt;
+todayWithdraw+=amt;
+history.push("Withdraw ₹"+amt);
+update();
+}else alert("Limit reached / Low balance");
 }
 
 function deposit(){
@@ -118,7 +133,7 @@ else alert("Invalid amount");
 function transfer(){
 let amt=parseInt(prompt("Enter transfer amount"));
 if(amt>0 && bal>=amt){bal-=amt;history.push("Transfer ₹"+amt);update();}
-else alert("Invalid amount / Low balance");
+else alert("Invalid amount");
 }
 
 function changePin(){
