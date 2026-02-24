@@ -5,95 +5,17 @@
 <title>ATM Simulation</title>
 
 <style>
-body{
-margin:0;
-font-family:Arial;
-background:#050505;
-color:#00ffff;
-display:flex;
-justify-content:center;
-align-items:center;
-height:100vh;
-}
-
-.atm{
-background:#111;
-padding:30px;
-border-radius:20px;
-box-shadow:0 0 30px #00ffff;
-text-align:center;
-width:340px;
-position:relative;
-}
-
-.card{
-width:80px;
-height:50px;
-background:#00ffff;
-margin:auto;
-border-radius:8px;
-animation:insert 2s infinite alternate;
-}
-@keyframes insert{
-from{transform:translateY(0)}
-to{transform:translateY(10px)}
-}
-
-.screen{
-background:#000;
-padding:15px;
-border-radius:10px;
-margin-bottom:15px;
-}
-
-input{
-width:100%;
-padding:10px;
-margin:10px 0;
-border-radius:10px;
-border:none;
-outline:none;
-text-align:center;
-font-size:18px;
-}
-
-button{
-background:#00ffff;
-border:none;
-padding:10px 18px;
-margin:5px;
-border-radius:20px;
-cursor:pointer;
-}
-
-.keypad button{
-width:70px;
-margin:4px;
-}
-
+body{margin:0;font-family:Arial;background:#050505;color:#00ffff;display:flex;justify-content:center;align-items:center;height:100vh;}
+.atm{background:#111;padding:30px;border-radius:20px;box-shadow:0 0 30px #00ffff;text-align:center;width:350px;position:relative;}
+.card{width:80px;height:50px;background:#00ffff;margin:auto;border-radius:8px;animation:insert 2s infinite alternate;}
+@keyframes insert{from{transform:translateY(0)}to{transform:translateY(10px)}}
+.screen{background:#000;padding:15px;border-radius:10px;margin-bottom:15px;}
+input{width:100%;padding:10px;margin:10px 0;border-radius:10px;border:none;text-align:center;font-size:18px;}
+button{background:#00ffff;border:none;padding:10px 18px;margin:5px;border-radius:20px;cursor:pointer;}
+.keypad button{width:70px;margin:4px;}
 .menu{display:none;}
-
-.history{
-max-height:100px;
-overflow:auto;
-background:#000;
-padding:10px;
-border-radius:10px;
-margin-top:10px;
-}
-
-.receipt{
-display:none;
-position:absolute;
-top:50%;
-left:50%;
-transform:translate(-50%,-50%);
-background:#000;
-padding:20px;
-border-radius:15px;
-box-shadow:0 0 20px #00ffff;
-width:260px;
-}
+.history{max-height:100px;overflow:auto;background:#000;padding:10px;border-radius:10px;margin-top:10px;}
+.receipt{display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:#000;padding:20px;border-radius:15px;box-shadow:0 0 20px #00ffff;width:260px;}
 </style>
 </head>
 
@@ -105,30 +27,16 @@ width:260px;
 
 <div class="screen">
 <h3>ATM Login</h3>
-<input type="password" id="pin" placeholder="Enter 4 digit PIN" readonly>
-</div>
-
-<div class="keypad">
-<button onclick="press(1)">1</button>
-<button onclick="press(2)">2</button>
-<button onclick="press(3)">3</button><br>
-<button onclick="press(4)">4</button>
-<button onclick="press(5)">5</button>
-<button onclick="press(6)">6</button><br>
-<button onclick="press(7)">7</button>
-<button onclick="press(8)">8</button>
-<button onclick="press(9)">9</button><br>
-<button onclick="clearPin()">C</button>
-<button onclick="press(0)">0</button>
-<button onclick="login()">OK</button>
+<input type="password" id="pin" placeholder="Enter 4 digit PIN" maxlength="4">
+<button onclick="login()">Login</button>
 </div>
 
 <div class="menu" id="menu">
 <h3>ATM Menu</h3>
 <p id="balance">Balance: ₹10000</p>
 
-<button onclick="withdraw()">Withdraw ₹500</button>
-<button onclick="deposit()">Deposit ₹500</button>
+<button onclick="withdraw()">Withdraw</button>
+<button onclick="deposit()">Deposit</button>
 <button onclick="showReceipt()">Receipt</button>
 <button onclick="logout()">Logout</button>
 <button onclick="closeATM()">Close</button>
@@ -147,38 +55,45 @@ width:260px;
 <script>
 let bal=10000;
 let history=[];
+let tries=0;
 
-function press(num){
-if(document.getElementById("pin").value.length<4){
-document.getElementById("pin").value+=num;
-}
-}
-
-function clearPin(){
-document.getElementById("pin").value="";
-}
+// ⭐ keyboard enter support
+document.getElementById("pin").addEventListener("keypress",function(e){
+if(e.key==="Enter") login();
+});
 
 function login(){
 let p=document.getElementById("pin").value;
 if(p.length==4){
 document.getElementById("menu").style.display="block";
+tries=0;
 }else{
+tries++;
 alert("Enter 4 digit PIN");
+if(tries>=3){
+alert("Card Blocked!");
+}
 }
 }
 
 function withdraw(){
-if(bal>=500){
-bal-=500;
-history.push("Withdraw ₹500");
+let amt=prompt("Enter withdraw amount");
+amt=parseInt(amt);
+if(amt>0 && bal>=amt){
+bal-=amt;
+history.push("Withdraw ₹"+amt);
 update();
-}else alert("Low Balance");
+}else alert("Invalid amount / Low balance");
 }
 
 function deposit(){
-bal+=500;
-history.push("Deposit ₹500");
+let amt=prompt("Enter deposit amount");
+amt=parseInt(amt);
+if(amt>0){
+bal+=amt;
+history.push("Deposit ₹"+amt);
 update();
+}else alert("Invalid amount");
 }
 
 function update(){
@@ -188,14 +103,8 @@ document.getElementById("history").innerHTML=history.join("<br>");
 
 function showReceipt(){
 document.getElementById("receipt").style.display="block";
-
 let data="<b>Balance: ₹"+bal+"</b><br><br>";
-if(history.length==0){
-data+="No Transactions";
-}else{
-data+=history.join("<br>");
-}
-
+data+= history.length?history.join("<br>"):"No Transactions";
 document.getElementById("receiptData").innerHTML=data;
 }
 
@@ -205,7 +114,7 @@ document.getElementById("receipt").style.display="none";
 
 function logout(){
 document.getElementById("menu").style.display="none";
-clearPin();
+document.getElementById("pin").value="";
 }
 
 function closeATM(){
