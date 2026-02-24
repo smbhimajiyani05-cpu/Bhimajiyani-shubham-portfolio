@@ -6,7 +6,7 @@
 
 <style>
 body{margin:0;font-family:Arial;background:#050505;color:#00ffff;display:flex;justify-content:center;align-items:center;height:100vh;}
-.atm{background:#111;padding:30px;border-radius:20px;box-shadow:0 0 30px #00ffff;text-align:center;width:350px;position:relative;}
+.atm{background:#111;padding:30px;border-radius:20px;box-shadow:0 0 30px #00ffff;text-align:center;width:360px;position:relative;}
 .card{width:80px;height:50px;background:#00ffff;margin:auto;border-radius:8px;animation:insert 2s infinite alternate;}
 @keyframes insert{from{transform:translateY(0)}to{transform:translateY(10px)}}
 .screen{background:#000;padding:15px;border-radius:10px;margin-bottom:15px;}
@@ -27,8 +27,23 @@ button{background:#00ffff;border:none;padding:10px 18px;margin:5px;border-radius
 
 <div class="screen">
 <h3>ATM Login</h3>
-<input type="password" id="pin" placeholder="Enter 4 digit PIN" maxlength="4">
-<button onclick="login()">Login</button>
+<input type="password" id="pin" maxlength="4" placeholder="Enter 4 digit PIN">
+</div>
+
+<!-- ⭐ ATM keypad -->
+<div class="keypad">
+<button onclick="press(1)">1</button>
+<button onclick="press(2)">2</button>
+<button onclick="press(3)">3</button><br>
+<button onclick="press(4)">4</button>
+<button onclick="press(5)">5</button>
+<button onclick="press(6)">6</button><br>
+<button onclick="press(7)">7</button>
+<button onclick="press(8)">8</button>
+<button onclick="press(9)">9</button><br>
+<button onclick="clearPin()">C</button>
+<button onclick="press(0)">0</button>
+<button onclick="login()">OK</button>
 </div>
 
 <div class="menu" id="menu">
@@ -37,6 +52,8 @@ button{background:#00ffff;border:none;padding:10px 18px;margin:5px;border-radius
 
 <button onclick="withdraw()">Withdraw</button>
 <button onclick="deposit()">Deposit</button>
+<button onclick="transfer()">Transfer</button>
+<button onclick="changePin()">Change PIN</button>
 <button onclick="showReceipt()">Receipt</button>
 <button onclick="logout()">Logout</button>
 <button onclick="closeATM()">Close</button>
@@ -56,44 +73,58 @@ button{background:#00ffff;border:none;padding:10px 18px;margin:5px;border-radius
 let bal=10000;
 let history=[];
 let tries=0;
+let pin="1234";
 
-// ⭐ keyboard enter support
-document.getElementById("pin").addEventListener("keypress",function(e){
+// ⭐ laptop keyboard support
+document.addEventListener("keydown",function(e){
+if(!isNaN(e.key) && document.getElementById("pin").value.length<4){
+document.getElementById("pin").value+=e.key;
+}
+if(e.key==="Backspace") clearPin();
 if(e.key==="Enter") login();
 });
 
+function press(num){
+if(document.getElementById("pin").value.length<4){
+document.getElementById("pin").value+=num;
+}
+}
+
+function clearPin(){document.getElementById("pin").value="";}
+
 function login(){
-let p=document.getElementById("pin").value;
-if(p.length==4){
+if(document.getElementById("pin").value===pin){
 document.getElementById("menu").style.display="block";
 tries=0;
 }else{
 tries++;
-alert("Enter 4 digit PIN");
-if(tries>=3){
-alert("Card Blocked!");
-}
+alert("Wrong PIN");
+if(tries>=3) alert("Card Blocked!");
 }
 }
 
 function withdraw(){
-let amt=prompt("Enter withdraw amount");
-amt=parseInt(amt);
-if(amt>0 && bal>=amt){
-bal-=amt;
-history.push("Withdraw ₹"+amt);
-update();
-}else alert("Invalid amount / Low balance");
+let amt=parseInt(prompt("Enter withdraw amount"));
+if(amt>0 && bal>=amt){bal-=amt;history.push("Withdraw ₹"+amt);update();}
+else alert("Invalid amount / Low balance");
 }
 
 function deposit(){
-let amt=prompt("Enter deposit amount");
-amt=parseInt(amt);
-if(amt>0){
-bal+=amt;
-history.push("Deposit ₹"+amt);
-update();
-}else alert("Invalid amount");
+let amt=parseInt(prompt("Enter deposit amount"));
+if(amt>0){bal+=amt;history.push("Deposit ₹"+amt);update();}
+else alert("Invalid amount");
+}
+
+function transfer(){
+let amt=parseInt(prompt("Enter transfer amount"));
+if(amt>0 && bal>=amt){bal-=amt;history.push("Transfer ₹"+amt);update();}
+else alert("Invalid amount / Low balance");
+}
+
+function changePin(){
+let newPin=prompt("Enter new 4 digit PIN");
+if(newPin.length==4){pin=newPin;alert("PIN changed");}
+else alert("Invalid PIN");
 }
 
 function update(){
@@ -104,22 +135,18 @@ document.getElementById("history").innerHTML=history.join("<br>");
 function showReceipt(){
 document.getElementById("receipt").style.display="block";
 let data="<b>Balance: ₹"+bal+"</b><br><br>";
-data+= history.length?history.join("<br>"):"No Transactions";
+data+=history.length?history.join("<br>"):"No Transactions";
 document.getElementById("receiptData").innerHTML=data;
 }
 
-function closeReceipt(){
-document.getElementById("receipt").style.display="none";
-}
+function closeReceipt(){document.getElementById("receipt").style.display="none";}
 
 function logout(){
 document.getElementById("menu").style.display="none";
 document.getElementById("pin").value="";
 }
 
-function closeATM(){
-window.history.back();
-}
+function closeATM(){window.history.back();}
 </script>
 
 </body>
