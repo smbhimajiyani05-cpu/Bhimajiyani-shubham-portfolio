@@ -2,21 +2,20 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>ATM Ultimate</title>
+<title>ATM GOD+</title>
 
 <style>
 body{margin:0;font-family:Arial;background:#050505;color:#00ffff;display:flex;justify-content:center;align-items:center;height:100vh;}
-.atm{background:#111;padding:30px;border-radius:20px;box-shadow:0 0 30px #00ffff;text-align:center;width:360px;position:relative;}
-.card{width:80px;height:50px;background:#00ffff;margin:auto;border-radius:8px;animation:insert 2s infinite alternate;}
-@keyframes insert{from{transform:translateY(0)}to{transform:translateY(10px)}}
+.atm{background:#111;padding:30px;border-radius:20px;box-shadow:0 0 35px #00ffff;text-align:center;width:380px;position:relative;}
+.card{width:90px;height:55px;background:#00ffff;margin:auto;border-radius:8px;animation:insert 2s infinite alternate;}
+@keyframes insert{from{transform:translateY(0)}to{transform:translateY(12px)}}
 input{width:100%;padding:10px;margin:10px 0;border-radius:10px;border:none;text-align:center;font-size:18px;}
 button{background:#00ffff;border:none;padding:10px 18px;margin:5px;border-radius:20px;cursor:pointer;}
 .keypad button{width:70px;margin:4px;}
 .menu{display:none;}
-.history{max-height:100px;overflow:auto;background:#000;padding:10px;border-radius:10px;margin-top:10px;}
-.receipt{display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:#000;padding:20px;border-radius:15px;box-shadow:0 0 20px #00ffff;width:260px;}
-.fp{width:80px;height:80px;border-radius:50%;border:2px solid #00ffff;margin:auto;animation:pulse 2s infinite;}
-@keyframes pulse{0%{box-shadow:0 0 10px #00ffff}50%{box-shadow:0 0 25px #00ffff}100%{box-shadow:0 0 10px #00ffff}}
+.history{max-height:110px;overflow:auto;background:#000;padding:10px;border-radius:10px;margin-top:10px;font-size:13px;}
+.receipt{display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:#000;padding:20px;border-radius:15px;box-shadow:0 0 20px #00ffff;width:270px;font-size:13px;}
+.cash{height:10px;background:#00ffff;margin-top:5px;}
 </style>
 </head>
 
@@ -27,10 +26,12 @@ button{background:#00ffff;border:none;padding:10px 18px;margin:5px;border-radius
 <div class="card"></div>
 
 <h3>ATM Login</h3>
-<input type="password" id="pin" maxlength="4" placeholder="Enter PIN">
+<select id="account">
+<option>4578-XXXX-8891</option>
+<option>6688-XXXX-2234</option>
+</select>
 
-<div class="fp" onclick="fingerprint()"></div>
-<p>Fingerprint Login</p>
+<input type="password" id="pin" maxlength="4" placeholder="Enter PIN">
 
 <div class="keypad">
 <button onclick="press(1)">1</button>
@@ -50,6 +51,8 @@ button{background:#00ffff;border:none;padding:10px 18px;margin:5px;border-radius
 <div class="menu" id="menu">
 <h3>ATM Menu</h3>
 <p id="balance">Balance: ₹10000</p>
+<p>ATM Cash Left</p>
+<div class="cash" id="cashbar"></div>
 
 <button onclick="withdraw()">Withdraw</button>
 <button onclick="deposit()">Deposit</button>
@@ -63,7 +66,7 @@ button{background:#00ffff;border:none;padding:10px 18px;margin:5px;border-radius
 </div>
 
 <div class="receipt" id="receipt">
-<h3>Transaction Receipt</h3>
+<h3>ATM Receipt</h3>
 <div id="receiptData"></div>
 <button onclick="closeReceipt()">Close</button>
 </div>
@@ -72,13 +75,15 @@ button{background:#00ffff;border:none;padding:10px 18px;margin:5px;border-radius
 
 <script>
 let bal=10000;
+let atmCash=20000;
 let history=[];
 let tries=0;
 let pin="1234";
 let dailyLimit=5000;
 let todayWithdraw=0;
 
-// ⭐ keyboard support
+function time(){return new Date().toLocaleTimeString();}
+
 document.addEventListener("keydown",function(e){
 if(!isNaN(e.key) && document.getElementById("pin").value.length<4){
 document.getElementById("pin").value+=e.key;
@@ -87,10 +92,7 @@ if(e.key==="Backspace") clearPin();
 if(e.key==="Enter") login();
 });
 
-function beep(){alert("Beep");}
-
 function press(num){
-beep();
 if(document.getElementById("pin").value.length<4){
 document.getElementById("pin").value+=num;
 }
@@ -98,15 +100,10 @@ document.getElementById("pin").value+=num;
 
 function clearPin(){document.getElementById("pin").value="";}
 
-function fingerprint(){
-alert("Fingerprint success");
-document.getElementById("menu").style.display="block";
-}
-
 function login(){
 if(document.getElementById("pin").value===pin){
 document.getElementById("menu").style.display="block";
-tries=0;
+updateCash();
 }else{
 tries++;
 alert("Wrong PIN");
@@ -116,35 +113,48 @@ if(tries>=3) alert("Card Blocked!");
 
 function withdraw(){
 let amt=parseInt(prompt("Enter withdraw amount"));
-if(amt>0 && bal>=amt && todayWithdraw+amt<=dailyLimit){
+if(amt>0 && bal>=amt && atmCash>=amt && todayWithdraw+amt<=dailyLimit){
 bal-=amt;
+atmCash-=amt;
 todayWithdraw+=amt;
-history.push("Withdraw ₹"+amt);
+history.push("Withdraw ₹"+amt+" ("+time()+")");
 update();
-}else alert("Limit reached / Low balance");
+updateCash();
+}else alert("Limit / ATM cash / balance issue");
 }
 
 function deposit(){
 let amt=parseInt(prompt("Enter deposit amount"));
-if(amt>0){bal+=amt;history.push("Deposit ₹"+amt);update();}
-else alert("Invalid amount");
+if(amt>0){
+bal+=amt;
+atmCash+=amt;
+history.push("Deposit ₹"+amt+" ("+time()+")");
+update();
+updateCash();
+}else alert("Invalid amount");
 }
 
 function transfer(){
 let amt=parseInt(prompt("Enter transfer amount"));
-if(amt>0 && bal>=amt){bal-=amt;history.push("Transfer ₹"+amt);update();}
-else alert("Invalid amount");
+if(amt>0 && bal>=amt){
+bal-=amt;
+history.push("Transfer ₹"+amt+" ("+time()+")");
+update();
+}else alert("Invalid amount");
 }
 
 function changePin(){
 let newPin=prompt("Enter new 4 digit PIN");
 if(newPin.length==4){pin=newPin;alert("PIN changed");}
-else alert("Invalid PIN");
 }
 
 function update(){
 document.getElementById("balance").innerText="Balance: ₹"+bal;
 document.getElementById("history").innerHTML=history.join("<br>");
+}
+
+function updateCash(){
+document.getElementById("cashbar").style.width=(atmCash/20000*100)+"%";
 }
 
 function showReceipt(){
@@ -155,12 +165,7 @@ document.getElementById("receiptData").innerHTML=data;
 }
 
 function closeReceipt(){document.getElementById("receipt").style.display="none";}
-
-function logout(){
-document.getElementById("menu").style.display="none";
-document.getElementById("pin").value="";
-}
-
+function logout(){document.getElementById("menu").style.display="none";document.getElementById("pin").value="";}
 function closeATM(){window.history.back();}
 </script>
 
