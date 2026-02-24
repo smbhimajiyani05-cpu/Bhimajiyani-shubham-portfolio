@@ -14,7 +14,7 @@ button{background:#00ffff;border:none;padding:10px 18px;margin:5px;border-radius
 .keypad button{width:70px;margin:4px;}
 .menu{display:none;}
 .history{max-height:110px;overflow:auto;background:#000;padding:10px;border-radius:10px;margin-top:10px;font-size:13px;}
-.receipt{display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:#000;padding:20px;border-radius:15px;box-shadow:0 0 20px #00ffff;width:270px;font-size:13px;}
+.receipt{display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:#000;padding:20px;border-radius:15px;box-shadow:0 0 20px #00ffff;width:270px;font-size:13px;text-align:center;}
 .cash{height:10px;background:#00ffff;margin-top:5px;}
 </style>
 </head>
@@ -52,7 +52,6 @@ button{background:#00ffff;border:none;padding:10px 18px;margin:5px;border-radius
 <button onclick="withdraw()">Withdraw</button>
 <button onclick="deposit()">Deposit</button>
 <button onclick="transfer()">Transfer</button>
-<button onclick="changePin()">Change PIN</button>
 <button onclick="showReceipt()">Receipt</button>
 <button onclick="logout()">Logout</button>
 <button onclick="closeATM()">Close</button>
@@ -78,7 +77,6 @@ let todayWithdraw=0;
 
 function time(){return new Date().toLocaleTimeString();}
 
-// ⭐ keyboard support
 document.addEventListener("keydown",function(e){
 if(!isNaN(e.key) && document.getElementById("pin").value.length<4){
 document.getElementById("pin").value+=e.key;
@@ -95,12 +93,10 @@ document.getElementById("pin").value+=num;
 
 function clearPin(){document.getElementById("pin").value="";}
 
-// ⭐ any 4 digit PIN login
 function login(){
 let entered=document.getElementById("pin").value;
 if(entered.length==4){
 document.getElementById("menu").style.display="block";
-tries=0;
 updateCash();
 }else{
 tries++;
@@ -141,10 +137,6 @@ update();
 }else alert("Invalid amount");
 }
 
-function changePin(){
-alert("PIN change disabled (any 4 digit allowed)");
-}
-
 function update(){
 document.getElementById("balance").innerText="Balance: ₹"+bal;
 document.getElementById("history").innerHTML=history.join("<br>");
@@ -156,8 +148,12 @@ document.getElementById("cashbar").style.width=(atmCash/20000*100)+"%";
 
 function showReceipt(){
 document.getElementById("receipt").style.display="block";
+
 let data="<b>Balance: ₹"+bal+"</b><br><br>";
 data+=history.length?history.join("<br>"):"No Transactions";
+
+data+="<br><br><b>THANK YOU ❤️</b>";   // ⭐ final change
+
 document.getElementById("receiptData").innerHTML=data;
 }
 
